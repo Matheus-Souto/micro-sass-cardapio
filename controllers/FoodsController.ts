@@ -9,7 +9,7 @@ export class FoodsController {
             const result = await client.query('SELECT * FROM comidas');
             client.release();
 
-            const foodsItems = result.rows.map(row => new Foods(row.id, row.nome, row.preco, row.user_id));
+            const foodsItems = result.rows.map(row => new Foods(row.id, row.nome, row.preco, row.categorias_id));
             res.json(foodsItems);
         } catch (err) {
             console.error('Erro ao consultar o banco de dados', err);
@@ -27,7 +27,7 @@ export class FoodsController {
                 return res.status(404).json({ error: 'Item não encontrado' });
             }
 
-            const foods = new Foods(foodsResult.rows[0].id, foodsResult.rows[0].nome, foodsResult.rows[0].preco, foodsResult.rows[0].user_id);
+            const foods = new Foods(foodsResult.rows[0].id, foodsResult.rows[0].nome, foodsResult.rows[0].preco, foodsResult.rows[0].categorias_id);
 
             res.json(foods);
         } catch (err) {
@@ -37,19 +37,19 @@ export class FoodsController {
     }
 
     static async createFoods(req: Request, res: Response) {
-        const { nome, preco, user_id } = req.body;
+        const { nome, preco, user_id: categorias_id } = req.body;
 
-        if (!user_id) {
-            return res.status(500).json({ message: 'Necessário informar user_id' });
+        if (!categorias_id) {
+            return res.status(500).json({ message: 'Necessário informar categorias_id' });
         }
 
         try {
             const newFoods = await pool.query(
-                'INSERT INTO comidas (nome, preco, user_id) VALUES ($1, $2, $3) RETURNING *',
-                [nome, preco, user_id]
+                'INSERT INTO comidas (nome, preco, categorias_id) VALUES ($1, $2, $3) RETURNING *',
+                [nome, preco, categorias_id]
             );
 
-            const foods = new Foods(newFoods.rows[0].id, newFoods.rows[0].nome, newFoods.rows[0].preco, newFoods.rows[0].user_id);
+            const foods = new Foods(newFoods.rows[0].id, newFoods.rows[0].nome, newFoods.rows[0].preco, newFoods.rows[0].categorias_id);
 
             res.json(foods);
         } catch (err) {
@@ -60,7 +60,7 @@ export class FoodsController {
 
     static async updateFoods(req: Request, res: Response) {
         const foodsId = parseInt(req.params.id);
-        const { nome, preco, user_id } = req.body;
+        const { nome, preco, user_id: categorias_id } = req.body;
 
         try {
             const menuResult = await pool.query('SELECT * FROM comidas WHERE id = $1', [foodsId]);
@@ -78,7 +78,7 @@ export class FoodsController {
                 updatedFoodsResult.rows[0].id,
                 updatedFoodsResult.rows[0].nome,
                 updatedFoodsResult.rows[0].preco,
-                updatedFoodsResult.rows[0].user_id
+                updatedFoodsResult.rows[0].categorias_id
             );
 
             res.json(updatedFoods);
