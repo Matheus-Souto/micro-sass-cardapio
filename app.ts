@@ -1,6 +1,6 @@
 import express from 'express';
 import { pool } from './connect';
-import { MenuController } from './controllers/MenuController';
+import { FoodsController } from './controllers/FoodsController';
 import { UserController } from './controllers/UserController';
 import { authenticateToken } from './middlewares/authentication';
 
@@ -21,11 +21,11 @@ app.get('/users/:id', authenticateToken, UserController.findById);
 app.delete('/users/:id', authenticateToken, UserController.delete);
 
 
-app.get('/menu/:id', authenticateToken, MenuController.findById);
-app.get('/menu', authenticateToken, MenuController.findAll);
-app.post('/menu', authenticateToken, MenuController.createMenu);
-app.put('/menu/:id', authenticateToken, MenuController.updateMenu);
-app.delete('/menu/:id', authenticateToken, MenuController.delete);
+app.get('/foods/:id', authenticateToken, FoodsController.findById);
+app.get('/foods', authenticateToken, FoodsController.findAll);
+app.post('/foods', authenticateToken, FoodsController.createFoods);
+app.put('/foods/:id', authenticateToken, FoodsController.updateFoods);
+app.delete('/foods/:id', authenticateToken, FoodsController.delete);
 
 
 
