@@ -37,7 +37,7 @@ export class FoodsController {
     }
 
     static async createFoods(req: Request, res: Response) {
-        const { nome, preco, user_id: categorias_id } = req.body;
+        const { nome, preco, categorias_id } = req.body;
 
         if (!categorias_id) {
             return res.status(500).json({ message: 'Necessário informar categorias_id' });
@@ -60,7 +60,7 @@ export class FoodsController {
 
     static async updateFoods(req: Request, res: Response) {
         const foodsId = parseInt(req.params.id);
-        const { nome, preco, user_id: categorias_id } = req.body;
+        const { nome, preco, categorias_id } = req.body;
 
         try {
             const menuResult = await pool.query('SELECT * FROM comidas WHERE id = $1', [foodsId]);

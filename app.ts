@@ -4,6 +4,7 @@ import { FoodsController } from './controllers/FoodsController';
 import { UserController } from './controllers/UserController';
 import { authenticateToken } from './middlewares/authentication';
 import { CategoryController } from './controllers/CategoryController';
+import { MenuController } from './controllers/MenuController';
 
 const app = express();
 const port = 3000;
@@ -33,6 +34,8 @@ app.get('/categories/:id', authenticateToken, CategoryController.findById);
 app.post('/categories', authenticateToken, CategoryController.createCategory);
 app.put('/categories/:id', authenticateToken, CategoryController.updateCategory);
 app.delete('/categories/:id', authenticateToken, CategoryController.delete);
+
+app.get('/menu', authenticateToken, MenuController.findAll);
 
 
 app.listen(port, () => {
