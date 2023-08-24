@@ -17,7 +17,7 @@ app.post('/register', UserController.register);
 app.post('/login', UserController.login);
 app.put('/users/:id', authenticateToken, UserController.update);
 app.get('/users', authenticateToken, UserController.findAll);
-app.get('/users/:id', authenticateToken, UserController.getById);
+app.get('/users/:id', authenticateToken, UserController.findById);
 app.delete('/users/:id', authenticateToken, UserController.delete);
 
 

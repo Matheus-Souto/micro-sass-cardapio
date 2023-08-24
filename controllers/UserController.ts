@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../connect";
-import { User } from "../models/User";
+import { User, UserDTO } from "../models/User";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import dotenv from "dotenv-safe";
@@ -61,7 +61,7 @@ export class UserController {
 
     static async findAll(req: Request, res: Response) {
         try {
-            const userResult = await pool.query('SELECT * FROM users');
+            const userResult = await pool.query('SELECT id, username FROM users');
 
             if (userResult.rows.length === 0) {
                 return res.status(404).json({ error: 'Nenhum usuário encontrado' });
@@ -73,7 +73,7 @@ export class UserController {
         }
     }
 
-    static async getById(req: Request, res: Response) {
+    static async findById(req: Request, res: Response) {
         const userId = parseInt(req.params.id);
 
         try {
@@ -83,7 +83,7 @@ export class UserController {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            const user = new User(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].password);
+            const user = new UserDTO(userResult.rows[0].id, userResult.rows[0].username);
 
             res.json(user);
         } catch (err) {
@@ -103,15 +103,16 @@ export class UserController {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
+            const hashedPassword = bcrypt.hashSync(password, 10);
+
             const updatedUserResult = await pool.query(
                 'UPDATE users SET username = COALESCE($1, username), password = COALESCE($2, password) WHERE id = $3 RETURNING *',
-                [username, password, userId]
+                [username, hashedPassword, userId]
             );
 
-            const updatedUser = new User(
+            const updatedUser = new UserDTO(
                 updatedUserResult.rows[0].id,
-                updatedUserResult.rows[0].username,
-                updatedUserResult.rows[0].password
+                updatedUserResult.rows[0].username
             );
 
             res.json(updatedUser);
