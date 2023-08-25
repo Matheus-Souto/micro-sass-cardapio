@@ -13,18 +13,21 @@ export class MenuController {
                 'JOIN users ON categorias.user_id = users.id'
             );
 
-            const menu = menuResult.rows.map(
-                (row) => new Menu(
-                    row.id_category,
-                    row.nome_category,
-                    row.descricao_category,
-                    row.user_id,
-                    row.id_food,
-                    row.nome_food,
-                    row.preco_food,
-                    row.categorias_id
-                )
-            );
+            const menu = menuResult.rows.map((row) => ({
+                category: 
+                    {
+                        id: row.id_category,
+                        name: row.nome_category,
+                        description: row.descricao_category,
+                    },
+                user_id: row.user_id,
+                food: 
+                    {
+                        id: row.id_food,
+                        name: row.nome_food,
+                        price: row.preco_food,
+                    },
+            }));
 
             res.json(menu)
         } catch (err) {
@@ -51,20 +54,22 @@ export class MenuController {
                 return res.status(404).json({ error: 'Cardápio não encontrado' });
             }
 
-            const menu = menuResult.rows.map(
-                (row) => new Menu(
-                    row.id_category,
-                    row.nome_category,
-                    row.descricao_category,
-                    row.user_id,
-                    row.id_food,
-                    row.nome_food,
-                    row.preco_food,
-                    row.categorias_id
-                )
-            );
-
-            res.json(menu)
+            const menu = menuResult.rows.map((row) => ({
+                category: 
+                    {
+                        id: row.id_category,
+                        name: row.nome_category,
+                        description: row.descricao_category,
+                    },
+                user_id: row.user_id,
+                food: 
+                    {
+                        id: row.id_food,
+                        name: row.nome_food,
+                        price: row.preco_food,
+                    },
+            }));
+            res.json(menu);
         } catch (err) {
             console.error('Erro ao buscar cardápio pelo id do usuário', err);
             return res.status(404).json({ error: 'Cardápio não encontrado' });

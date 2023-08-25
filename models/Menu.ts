@@ -6,7 +6,6 @@ export class Menu {
     id_food: number;
     nome_food: string;
     preco_food: number;
-    categorias_id: number;
 
     constructor(
         id_category: number, 
@@ -15,8 +14,7 @@ export class Menu {
         user_id: number,
         id_food: number,
         nome_food: string,
-        preco_food: number,
-        categorias_id: number     
+        preco_food: number,   
     ) {
         this.id_category = id_category;
         this.nome_category = nome_category;
@@ -25,6 +23,5 @@ export class Menu {
         this.id_food = id_food;
         this.nome_food = nome_food;
         this.preco_food = preco_food;
-        this.categorias_id = categorias_id;
     }
 }
