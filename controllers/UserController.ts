@@ -67,7 +67,8 @@ export class UserController {
 
     static async findAll(req: Request, res: Response) {
         try {
-            const userResult = await pool.query('SELECT id, username FROM users');
+            const userResult = await pool.query('SELECT id, username, nome_restaurante, rua_restaurante, bairro_restaurante, ' + 
+            'numero_restaurante, estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email FROM users');
 
             if (userResult.rows.length === 0) {
                 return res.status(404).json({ error: 'Nenhum usuário encontrado' });
@@ -103,7 +104,8 @@ export class UserController {
 
     static async update(req: Request, res: Response) {
         const userId = parseInt(req.params.id);
-        const { username, password } = req.body;
+        const { username, password, nome_restaurante, rua_restaurante, bairro_restaurante, numero_restaurante, 
+            estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email } = req.body;
 
         try {
             const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
@@ -115,8 +117,14 @@ export class UserController {
             const hashedPassword = bcrypt.hashSync(password, 10);
 
             const updatedUserResult = await pool.query(
-                'UPDATE users SET username = COALESCE($1, username), password = COALESCE($2, password) WHERE id = $3 RETURNING *',
-                [username, hashedPassword, userId]
+                'UPDATE users SET username = COALESCE($1, username), password = COALESCE($2, password), ' + 
+                'nome_restaurante = COALESCE($3, nome_restaurante), rua_restaurante = COALESCE($4, rua_restaurante), ' + 
+                'bairro_restaurante = COALESCE($5, bairro_restaurante), numero_restaurante = COALESCE($6, numero_restaurante), ' + 
+                'estado_restaurante = COALESCE($7, estado_restaurante), cep_restaurante = COALESCE($8, cep_restaurante), ' + 
+                'telefone_restaurante = COALESCE($9, telefone_restaurante), cpfcnpj_restaurante = COALESCE($10, cpfcnpj_restaurante), ' + 
+                'email = COALESCE($11, email) WHERE id = $12 RETURNING *',
+                [username, hashedPassword, nome_restaurante, rua_restaurante, bairro_restaurante, numero_restaurante, 
+                    estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email, userId]
             );
 
             const updatedUser = new UserDTO(
