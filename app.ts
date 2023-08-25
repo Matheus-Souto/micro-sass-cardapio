@@ -5,6 +5,7 @@ import { UserController } from './controllers/UserController';
 import { authenticateToken } from './middlewares/authentication';
 import { CategoryController } from './controllers/CategoryController';
 import { MenuController } from './controllers/MenuController';
+import { RestaurantController } from './controllers/RestaurantController';
 
 const app = express();
 const port = 3000;
@@ -37,6 +38,12 @@ app.delete('/categories/:id', authenticateToken, CategoryController.delete);
 
 app.get('/menu', authenticateToken, MenuController.findAll);
 app.get('/menu/:id', authenticateToken, MenuController.findByUserId);
+
+app.get('/restaurants', authenticateToken, RestaurantController.findAll);
+app.get('/restaurants/:id', authenticateToken, RestaurantController.findById);
+app.post('/restaurants', authenticateToken, RestaurantController.createRestaurant);
+app.put('/restaurants/:id', authenticateToken, RestaurantController.updateRestaurant);
+app.delete('/restaurants/:id', authenticateToken, RestaurantController.delete);
 
 
 app.listen(port, () => {
