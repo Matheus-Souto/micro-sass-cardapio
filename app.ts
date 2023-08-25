@@ -36,6 +36,7 @@ app.put('/categories/:id', authenticateToken, CategoryController.updateCategory)
 app.delete('/categories/:id', authenticateToken, CategoryController.delete);
 
 app.get('/menu', authenticateToken, MenuController.findAll);
+app.get('/menu/:id', authenticateToken, MenuController.findByUserId);
 
 
 app.listen(port, () => {
