@@ -20,7 +20,10 @@ export class UserController {
                 return res.status(401).json({ error: 'Credenciais inválidas' });
             }
 
-            const user = new User(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].password);
+            const user = new User(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].password, userResult.rows[0].nome_restaurante,
+                                  userResult.rows[0].rua_restaurante, userResult.rows[0].bairro_restaurante, userResult.rows[0].numero_restaurante,
+                                  userResult.rows[0].estado_restaurante, userResult.rows[0].cep_restaurante, userResult.rows[0].telefone_restaurante,
+                                  userResult.rows[0].cpfcnpj_restaurante, userResult.rows[0].email);
 
             const token = jwt.sign({ userId: user.id }, jwtToken, { expiresIn: '1h' });
 
@@ -48,7 +51,10 @@ export class UserController {
                 [username, hashedPassword]
             );
 
-            const user = new User(newUser.rows[0].id, newUser.rows[0].username, newUser.rows[0].password);
+            const user = new User(newUser.rows[0].id, newUser.rows[0].username, newUser.rows[0].password, newUser.rows[0].nome_restaurante,
+                newUser.rows[0].rua_restaurante, newUser.rows[0].bairro_restaurante, newUser.rows[0].numero_restaurante,
+                newUser.rows[0].estado_restaurante, newUser.rows[0].cep_restaurante, newUser.rows[0].telefone_restaurante,
+                newUser.rows[0].cpfcnpj_restaurante, newUser.rows[0].email);
 
             const token = jwt.sign({ userId: user.id }, jwtToken, { expiresIn: '1h' });
 
@@ -83,7 +89,10 @@ export class UserController {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            const user = new UserDTO(userResult.rows[0].id, userResult.rows[0].username);
+            const user = new UserDTO(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].nome_restaurante,
+                userResult.rows[0].rua_restaurante, userResult.rows[0].bairro_restaurante, userResult.rows[0].numero_restaurante,
+                userResult.rows[0].estado_restaurante, userResult.rows[0].cep_restaurante, userResult.rows[0].telefone_restaurante,
+                userResult.rows[0].cpfcnpj_restaurante, userResult.rows[0].email);
 
             res.json(user);
         } catch (err) {
@@ -111,8 +120,10 @@ export class UserController {
             );
 
             const updatedUser = new UserDTO(
-                updatedUserResult.rows[0].id,
-                updatedUserResult.rows[0].username
+                updatedUserResult.rows[0].id, updatedUserResult.rows[0].username, updatedUserResult.rows[0].nome_restaurante,
+                updatedUserResult.rows[0].rua_restaurante, updatedUserResult.rows[0].bairro_restaurante, updatedUserResult.rows[0].numero_restaurante,
+                updatedUserResult.rows[0].estado_restaurante, updatedUserResult.rows[0].cep_restaurante, updatedUserResult.rows[0].telefone_restaurante,
+                updatedUserResult.rows[0].cpfcnpj_restaurante, updatedUserResult.rows[0].email
             );
 
             res.json(updatedUser);
@@ -131,11 +142,11 @@ export class UserController {
             if (userResult.rows.length === 0) {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
-            
+
             await pool.query('DELETE FROM users WHERE id = $1', [userId]);
 
             res.json({ message: 'Usuário excluído com sucesso' })
-            
+
         } catch (err) {
             console.error('Erro ao deletar usuário', err);
             res.status(500).send('Erro ao deletar usuário');

@@ -13,6 +13,10 @@ export class MenuController {
                 'JOIN users ON categorias.user_id = users.id'
             );
 
+            if (menuResult.rows.length === 0) {
+                return res.status(404).json({ error: 'Cardápio não encontrado' });
+            }
+
             const menu = menuResult.rows.map((row) => ({
                 category: 
                     {
