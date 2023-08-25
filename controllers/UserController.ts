@@ -20,10 +20,7 @@ export class UserController {
                 return res.status(401).json({ error: 'Credenciais inválidas' });
             }
 
-            const user = new User(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].password, userResult.rows[0].nome_restaurante,
-                                  userResult.rows[0].rua_restaurante, userResult.rows[0].bairro_restaurante, userResult.rows[0].numero_restaurante,
-                                  userResult.rows[0].estado_restaurante, userResult.rows[0].cep_restaurante, userResult.rows[0].telefone_restaurante,
-                                  userResult.rows[0].cpfcnpj_restaurante, userResult.rows[0].email);
+            const user = new User(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].password, userResult.rows[0].email, userResult.rows[0].cpf);
 
             const token = jwt.sign({ userId: user.id }, jwtToken, { expiresIn: '1h' });
 
@@ -35,26 +32,33 @@ export class UserController {
     }
 
     static async register(req: Request, res: Response) {
-        const { username, password } = req.body;
+        const { username, password, email, cpf } = req.body;
 
         try {
             const existingUser = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+            const existingEmail = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+            const existingCpf = await pool.query('SELECT * FROM users WHERE cpf = $1', [cpf]);
 
             if (existingUser.rows.length > 0) {
                 return res.status(400).json({ error: 'Usuário já existe' });
             }
 
+            if (existingEmail.rows.length > 0) {
+                return res.status(400).json({ error: 'E-mail já cadastrado' });
+            }
+
+            if (existingCpf.rows.length > 0) {
+                return res.status(400).json({ error: 'CPF já cadastrado' });
+            }
+
             const hashedPassword = bcrypt.hashSync(password, 10);
 
             const newUser = await pool.query(
-                'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *',
-                [username, hashedPassword]
+                'INSERT INTO users (username, password, email, cpf) VALUES ($1, $2, $3, $4) RETURNING *',
+                [username, hashedPassword, email, cpf]
             );
 
-            const user = new User(newUser.rows[0].id, newUser.rows[0].username, newUser.rows[0].password, newUser.rows[0].nome_restaurante,
-                newUser.rows[0].rua_restaurante, newUser.rows[0].bairro_restaurante, newUser.rows[0].numero_restaurante,
-                newUser.rows[0].estado_restaurante, newUser.rows[0].cep_restaurante, newUser.rows[0].telefone_restaurante,
-                newUser.rows[0].cpfcnpj_restaurante, newUser.rows[0].email);
+            const user = new User(newUser.rows[0].id, newUser.rows[0].username, newUser.rows[0].password, newUser.rows[0].email, newUser.rows[0].cpf);
 
             const token = jwt.sign({ userId: user.id }, jwtToken, { expiresIn: '1h' });
 
@@ -67,8 +71,8 @@ export class UserController {
 
     static async findAll(req: Request, res: Response) {
         try {
-            const userResult = await pool.query('SELECT id, username, nome_restaurante, rua_restaurante, bairro_restaurante, ' + 
-            'numero_restaurante, estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email FROM users');
+            const userResult = await pool.query('SELECT id, username, ' + 
+            'email, cpf FROM users');
 
             if (userResult.rows.length === 0) {
                 return res.status(404).json({ error: 'Nenhum usuário encontrado' });
@@ -90,10 +94,7 @@ export class UserController {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            const user = new UserDTO(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].nome_restaurante,
-                userResult.rows[0].rua_restaurante, userResult.rows[0].bairro_restaurante, userResult.rows[0].numero_restaurante,
-                userResult.rows[0].estado_restaurante, userResult.rows[0].cep_restaurante, userResult.rows[0].telefone_restaurante,
-                userResult.rows[0].cpfcnpj_restaurante, userResult.rows[0].email);
+            const user = new UserDTO(userResult.rows[0].id, userResult.rows[0].username, userResult.rows[0].email, userResult.rows[0].cpf);
 
             res.json(user);
         } catch (err) {
@@ -104,8 +105,23 @@ export class UserController {
 
     static async update(req: Request, res: Response) {
         const userId = parseInt(req.params.id);
-        const { username, password, nome_restaurante, rua_restaurante, bairro_restaurante, numero_restaurante, 
-            estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email } = req.body;
+        const { username, password, cpf, email } = req.body;
+
+        const existingUser = await pool.query('SELECT * FROM users WHERE username = $1 AND id != $2', [username, userId]);
+        const existingEmail = await pool.query('SELECT * FROM users WHERE email = $1 AND id != $2', [email, userId]);
+        const existingCpf = await pool.query('SELECT * FROM users WHERE cpf = $1 AND id != $2', [cpf, userId]);
+
+            if (existingUser.rows.length > 0) {
+                return res.status(400).json({ error: 'Usuário já existe' });
+            }
+
+            if (existingEmail.rows.length > 0) {
+                return res.status(400).json({ error: 'E-mail já cadastrado' });
+            }
+
+            if (existingCpf.rows.length > 0) {
+                return res.status(400).json({ error: 'CPF já cadastrado' });
+            }
 
         try {
             const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
@@ -118,20 +134,12 @@ export class UserController {
 
             const updatedUserResult = await pool.query(
                 'UPDATE users SET username = COALESCE($1, username), password = COALESCE($2, password), ' + 
-                'nome_restaurante = COALESCE($3, nome_restaurante), rua_restaurante = COALESCE($4, rua_restaurante), ' + 
-                'bairro_restaurante = COALESCE($5, bairro_restaurante), numero_restaurante = COALESCE($6, numero_restaurante), ' + 
-                'estado_restaurante = COALESCE($7, estado_restaurante), cep_restaurante = COALESCE($8, cep_restaurante), ' + 
-                'telefone_restaurante = COALESCE($9, telefone_restaurante), cpfcnpj_restaurante = COALESCE($10, cpfcnpj_restaurante), ' + 
-                'email = COALESCE($11, email) WHERE id = $12 RETURNING *',
-                [username, hashedPassword, nome_restaurante, rua_restaurante, bairro_restaurante, numero_restaurante, 
-                    estado_restaurante, cep_restaurante, telefone_restaurante, cpfcnpj_restaurante, email, userId]
+                'cpf = COALESCE($3, cpf), email = COALESCE($4, email) WHERE id = $5 RETURNING *',
+                [username, hashedPassword, cpf, email, userId]
             );
 
             const updatedUser = new UserDTO(
-                updatedUserResult.rows[0].id, updatedUserResult.rows[0].username, updatedUserResult.rows[0].nome_restaurante,
-                updatedUserResult.rows[0].rua_restaurante, updatedUserResult.rows[0].bairro_restaurante, updatedUserResult.rows[0].numero_restaurante,
-                updatedUserResult.rows[0].estado_restaurante, updatedUserResult.rows[0].cep_restaurante, updatedUserResult.rows[0].telefone_restaurante,
-                updatedUserResult.rows[0].cpfcnpj_restaurante, updatedUserResult.rows[0].email
+                updatedUserResult.rows[0].id, updatedUserResult.rows[0].username, updatedUserResult.rows[0].email, updatedUserResult.rows[0].cpf
             );
 
             res.json(updatedUser);
