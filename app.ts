@@ -6,6 +6,7 @@ import { authenticateToken } from './middlewares/authentication';
 import { CategoryController } from './controllers/CategoryController';
 import { MenuController } from './controllers/MenuController';
 import { RestaurantController } from './controllers/RestaurantController';
+import { AddressController } from './controllers/AddressController';
 
 const app = express();
 const port = 3000;
@@ -44,6 +45,10 @@ app.get('/restaurants/:id', authenticateToken, RestaurantController.findById);
 app.post('/restaurants', authenticateToken, RestaurantController.createRestaurant);
 app.put('/restaurants/:id', authenticateToken, RestaurantController.updateRestaurant);
 app.delete('/restaurants/:id', authenticateToken, RestaurantController.delete);
+
+app.get('/addresses', authenticateToken, AddressController.findAll);
+app.get('/addresses/:id', authenticateToken, AddressController.findById);
+app.post('/addresses', authenticateToken, AddressController.createAddress);
 
 
 app.listen(port, () => {
